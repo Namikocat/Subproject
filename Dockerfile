@@ -1,17 +1,28 @@
+# Stage 1: Build stage
+FROM python:3.8-slim AS builder
 
-# ใช้ base image ของ Python
-FROM python:3.8-slim
-
-# ตั้ง working directory
 WORKDIR /app
 
-# คัดลอกไฟล์ที่จำเป็นไปยัง working directory
-COPY requirements.txt requirements.txt
+COPY requirements.txt .
+
+# ติดตั้ง dependencies ใน build stage
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    && pip install --no-cache-dir -r requirements.txt -t /app/deps \
+    && apt-get remove -y build-essential \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Stage 2: Final stage
+FROM python:3.8-slim
+
+WORKDIR /app
+
+COPY --from=builder /app/deps /app/deps
 COPY app.py app.py
-COPY best.pt best.pt  # คัดลอกไฟล์โมเดลของคุณไปยัง Docker image
+COPY best.pt best.pt
 
-# ติดตั้ง dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# เพิ่มไลบรารีที่ติดตั้งไว้ใน PYTHONPATH
+ENV PYTHONPATH="/app/deps:${PYTHONPATH}"
 
-# รันแอป
 CMD ["python", "app.py"]
