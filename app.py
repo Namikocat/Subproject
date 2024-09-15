@@ -1,11 +1,21 @@
-
+import os
+import requests
 import torch
 from ultralytics import YOLO
 import gradio as gr
 from PIL import Image, ImageDraw
 
+# ตรวจสอบและดาวน์โหลดโมเดลถ้าไม่มีอยู่ในไดเรกทอรี
+model_path = 'best.pt'
+if not os.path.exists(model_path):
+    url = 'https://drive.google.com/file/d/15ln51_iQrcHcVdJ3eBz3ltisyUO7Eq6x/view?usp=sharing'  # เปลี่ยนเป็น URL ของโมเดลที่คุณเก็บไว้
+    print(f"Downloading model from {url}...")
+    response = requests.get(url)
+    with open(model_path, 'wb') as file:
+        file.write(response.content)
+    print("Model downloaded successfully.")
+
 # โหลดโมเดล YOLO โดยใช้ ultralytics
-model_path = 'best.pt'  # เปลี่ยนชื่อไฟล์ตามที่คุณอัปโหลด
 model = YOLO(model_path)  # โหลดโมเดลโดยตรงจาก ultralytics
 
 def inference(gr_input):
