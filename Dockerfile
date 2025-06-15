@@ -21,6 +21,7 @@ WORKDIR /app
 COPY --from=builder /app/deps /app/deps
 COPY app.py app.py
 COPY best.pt best.pt
+COPY store_app.py store_app.py
 
 # เพิ่มไลบรารีที่ติดตั้งไว้ใน PYTHONPATH
 ENV PYTHONPATH="/app/deps:${PYTHONPATH}"
